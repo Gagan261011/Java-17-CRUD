@@ -120,22 +120,58 @@ Body: {"name":"John Doe","age":15,"grade":"A"}
 
 ```java
 // File: StudentController.java
+
+// Line 1: @RestController - Tells Spring this class handles web requests
+// This combines @Controller + @ResponseBody
+// Meaning: Methods return data (not HTML pages), converted to JSON automatically
 @RestController
+
+// Line 2: @RequestMapping - Sets base URL for all methods in this class
+// All methods here start with /api/students
+// Example: /api/students, /api/students/1, /api/students/health
 @RequestMapping("/api/students")
+
+// Line 3: public class - Declares a public class (visible to Spring)
 public class StudentController {
 
+    // Line 4: private final - Declares a variable that:
+    // - private = only this class can use it
+    // - final = cannot be changed after set (like a constant reference)
+    // StudentService = type of object we're storing
     private final StudentService studentService;
     
+    // Line 5-7: Constructor - Special method called when object is created
+    // Spring calls this automatically and provides StudentService
+    // This is called "Constructor Injection" (Spring injects dependency)
     public StudentController(StudentService studentService) {
+        // Line 6: this.studentService = stores the provided service
+        // "this" means "this class's variable"
         this.studentService = studentService;
     }
 
-    @PostMapping  // Matches POST /api/students
+    // Line 8: @PostMapping - Matches HTTP POST requests
+    // When someone does: POST /api/students, this method runs
+    @PostMapping
+    
+    // Line 9: Method declaration
+    // - public = anyone can call it
+    // - ResponseEntity<StudentResponse> = return type (HTTP response with StudentResponse body)
+    // - createStudent = method name
+    // - @RequestBody StudentRequest request = parameter:
+    //   * @RequestBody tells Spring: "Take JSON from request body"
+    //   * Spring converts JSON → StudentRequest object automatically
+    //   * request = variable name to use in this method
     public ResponseEntity<StudentResponse> createStudent(@RequestBody StudentRequest request) {
-        // Call service layer
+        
+        // Line 10: Call service layer to do the actual work
+        // studentService.createStudent(request) returns StudentResponse
+        // We store result in "response" variable
         StudentResponse response = studentService.createStudent(request);
         
-        // Return 201 Created status with response body
+        // Line 11: Return HTTP response
+        // ResponseEntity.status(HttpStatus.CREATED) = Set status to 201 Created
+        // .body(response) = Put StudentResponse object in response body
+        // Spring converts StudentResponse → JSON automatically
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
@@ -153,35 +189,85 @@ public class StudentController {
 
 ```java
 // File: StudentService.java
+
+// Line 1: @Service - Tells Spring this is a service layer class
+// Service = Contains business logic (rules, calculations, coordination)
+// Spring creates ONE instance and manages it
 @Service
+
+// Line 2: Declare public class
 public class StudentService {
 
+    // Line 3: Declare repository variable
+    // private final = Cannot change after constructor sets it
+    // StudentRepository = Interface for database operations
     private final StudentRepository studentRepository;
     
+    // Line 4-6: Constructor - Spring calls this and injects repository
     public StudentService(StudentRepository studentRepository) {
+        // Line 5: Store the repository so we can use it later
         this.studentRepository = studentRepository;
     }
 
+    // Line 7: Method to create student
+    // Input: StudentRequest (DTO from controller)
+    // Output: StudentResponse (DTO back to controller)
     public StudentResponse createStudent(StudentRequest request) {
+        
         // Step 4a: Create new Student entity from request DTO
+        // Line 8: new Student() creates empty Student object
         Student student = new Student();
+        
+        // Line 9: Copy name from request to student entity
+        // request.getName() gets "John Doe" from request
+        // student.setName(...) stores it in entity
         student.setName(request.getName());  // "John Doe"
+        
+        // Line 10: Copy age from request (15)
         student.setAge(request.getAge());    // 15
+        
+        // Line 11: Copy grade from request ("A")
         student.setGrade(request.getGrade()); // "A"
         
         // Step 4b: Save to database using repository
+        // Line 12: studentRepository.save(student) does:
+        //   1. JPA converts Student object → SQL INSERT
+        //   2. Database executes INSERT
+        //   3. Database generates ID (1, 2, 3...)
+        //   4. Returns Student object with ID filled in
+        // We store result in savedStudent variable
         Student savedStudent = studentRepository.save(student);
         
         // Step 4c: Convert entity to response DTO
+        // Line 13: Call helper method to convert Student → StudentResponse
+        // Then return that response to controller
         return convertToResponse(savedStudent);
     }
     
+    // Line 14: Helper method to convert Entity → DTO
+    // private = only this class can call it
+    // Input: Student entity (from database)
+    // Output: StudentResponse DTO (for controller)
     private StudentResponse convertToResponse(Student student) {
+        
+        // Line 15: Create empty StudentResponse object
         StudentResponse response = new StudentResponse();
+        
+        // Line 16: Copy ID from entity to response
+        // student.getId() gets database-generated ID (like 1)
+        // response.setId(...) stores it in DTO
         response.setId(student.getId());       // Database generated ID
+        
+        // Line 17: Copy name from entity to response
         response.setName(student.getName());
+        
+        // Line 18: Copy age from entity to response
         response.setAge(student.getAge());
+        
+        // Line 19: Copy grade from entity to response
         response.setGrade(student.getGrade());
+        
+        // Line 20: Return the complete response DTO
         return response;
     }
 }
@@ -217,32 +303,75 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
 ```java
 // File: Student.java (Entity)
+
+// Line 1: @Entity - Tells JPA: "This class represents a database table"
+// JPA will create/manage a table for this class
 @Entity
+
+// Line 2: @Table - Specifies table name in database
+// name = "students" means table is called "students" (not "Student")
+// Without this, table name would be "student" (lowercase class name)
 @Table(name = "students")
+
+// Line 3: Declare public class
 public class Student {
     
+    // Line 4: @Id - Marks this field as the Primary Key
+    // Primary Key = unique identifier for each row (no duplicates allowed)
     @Id
+    
+    // Line 5: @GeneratedValue - Database auto-generates this value
+    // strategy = GenerationType.IDENTITY means:
+    //   - Database decides the ID (usually 1, 2, 3, 4...)
+    //   - We don't set it manually
+    //   - Database guarantees it's unique
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
+    // Line 6: Field to store ID
+    // private = only this class accesses directly (use getters/setters)
+    // Long = data type (whole numbers, can be null)
+    // id = variable name
     private Long id;
     
+    // Line 7: Field to store student name
+    // String = text data type
+    // JPA creates column "name" in database table
     private String name;
+    
+    // Line 8: Field to store student age
+    // Integer = whole number data type (can be null)
+    // JPA creates column "age" in database table
     private Integer age;
+    
+    // Line 9: Field to store student grade
+    // JPA creates column "grade" in database table
     private String grade;
     
     // Constructors, getters, setters...
+    // (Not shown but required for JPA to work)
+    // - Default constructor: Student() - creates empty object
+    // - Parameterized constructor: Student(name, age, grade)
+    // - Getters: getId(), getName(), getAge(), getGrade()
+    // - Setters: setId(), setName(), setAge(), setGrade()
 }
 ```
 
 **What happens:** Hibernate (JPA implementation) looks at `@Entity` class and generates SQL:
 
 ```sql
+-- When you call repository.save(student), JPA generates this SQL:
 INSERT INTO students (name, age, grade) 
 VALUES ('John Doe', 15, 'A');
+
+-- Note: ID is NOT in INSERT because database auto-generates it
+-- Database automatically adds id = 1 (or next available number)
 ```
 
 **How ID is generated:**
 - `@GeneratedValue` tells database: "You generate the ID"
 - Database auto-generates ID = 1 (first student), 2 (second), etc.
+- After INSERT, database returns the generated ID
+- JPA updates the Student object with this ID
 
 ---
 
@@ -419,12 +548,32 @@ public class StudentController {
 
     private final StudentService studentService;
     
-    @GetMapping("/{id}")  // {id} is a placeholder for path variable
+    // Line 1: @GetMapping - Matches HTTP GET requests
+    // "/{id}" means URL has a variable part
+    // Examples: /api/students/1, /api/students/5, /api/students/999
+    // {id} is a placeholder that captures the number from URL
+    @GetMapping("/{id}")
+    
+    // Line 2: Method declaration
+    // - public = anyone can call
+    // - ResponseEntity<StudentResponse> = return type (HTTP response with body)
+    // - getStudentById = method name
+    // - @PathVariable Long id = parameter:
+    //   * @PathVariable tells Spring: "Extract {id} from URL path"
+    //   * Spring automatically converts it to Long (number)
+    //   * Example: URL /api/students/1 → id = 1L
+    //   * Example: URL /api/students/999 → id = 999L
     public ResponseEntity<StudentResponse> getStudentById(@PathVariable Long id) {
-        // Call service layer with ID from URL
+        
+        // Line 3: Call service layer to get student from database
+        // Pass the ID from URL to service
+        // Service returns StudentResponse or throws exception if not found
         StudentResponse response = studentService.getStudentById(id);
         
-        // Return 200 OK with response body
+        // Line 4: Return HTTP 200 OK response
+        // ResponseEntity.ok(response) creates:
+        //   - Status: 200 OK
+        //   - Body: StudentResponse converted to JSON
         return ResponseEntity.ok(response);
     }
 }
@@ -448,15 +597,35 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     
+    // Line 1: Method to get student by ID
+    // Input: Long id (from controller)
+    // Output: StudentResponse (DTO) or throws exception
     public StudentResponse getStudentById(Long id) {
+        
         // Step 4a: Try to find student in database
+        
+        // Line 2: Call repository to search database
+        // studentRepository.findById(id) returns Optional<Student>
+        // Optional = a box that either:
+        //   - Contains Student (if found)
+        //   - Is empty (if not found)
+        // This prevents null pointer errors!
+        
+        // Line 3: .orElseThrow() means:
+        // "If Optional is empty (student not found), throw exception"
+        // () -> new StudentNotFoundException(...) is a lambda expression
+        // Lambda = short way to create an exception when needed
+        // If student IS found, this line is skipped and we get the Student object
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with id: " + id));
         
-        // Step 4b: If found, convert entity to DTO
+        // Step 4b: If we reach here, student was found!
+        // Line 4: Convert Student entity → StudentResponse DTO
+        // Then return to controller
         return convertToResponse(student);
     }
     
+    // Helper method (same as before)
     private StudentResponse convertToResponse(Student student) {
         StudentResponse response = new StudentResponse();
         response.setId(student.getId());
@@ -708,21 +877,62 @@ public class StudentNotFoundException extends RuntimeException {
 
 ```java
 // File: GlobalExceptionHandler.java
-@RestControllerAdvice  // Catches exceptions from all @RestController classes
+
+// Line 1: @RestControllerAdvice - Tells Spring:
+// "This class handles exceptions from ALL @RestController classes"
+// Global = catches exceptions from entire application
+// Advantage: All error handling in ONE place (not scattered everywhere)
+@RestControllerAdvice
+
+// Line 2: Declare public class
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(StudentNotFoundException.class)  // Catches StudentNotFoundException
-    @ResponseStatus(HttpStatus.NOT_FOUND)  // Sets response status to 404
+    // Line 3: @ExceptionHandler - Tells Spring:
+    // "When StudentNotFoundException is thrown, call this method"
+    // Spring searches all @RestControllerAdvice classes for matching handler
+    @ExceptionHandler(StudentNotFoundException.class)
+    
+    // Line 4: @ResponseStatus - Sets HTTP status code
+    // HttpStatus.NOT_FOUND = 404 Not Found
+    // This automatically sets response status without ResponseEntity
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    
+    // Line 5: Method declaration
+    // - public = Spring can call it
+    // - ErrorResponse = return type (custom error object)
+    // - handleStudentNotFoundException = method name (descriptive!)
+    // - StudentNotFoundException ex = the exception that was thrown
+    //   Spring passes the actual exception object here
     public ErrorResponse handleStudentNotFoundException(StudentNotFoundException ex) {
+        
         // Create error response object
+        
+        // Line 6: Create new empty ErrorResponse object
         ErrorResponse error = new ErrorResponse();
+        
+        // Line 7: Set timestamp to current date/time
+        // LocalDateTime.now() gets current moment
         error.setTimestamp(LocalDateTime.now());
+        
+        // Line 8: Set HTTP status code (404)
         error.setStatus(404);
+        
+        // Line 9: Set error type ("Not Found")
         error.setError("Not Found");
-        error.setMessage(ex.getMessage());  // "Student not found with id: 999"
+        
+        // Line 10: Set error message from exception
+        // ex.getMessage() gets the message we set when creating exception
+        // Example: "Student not found with id: 999"
+        error.setMessage(ex.getMessage());
+        
+        // Line 11: Set request path (where error happened)
+        // In real code, you'd get this from HttpServletRequest
         error.setPath("/api/students/999");
         
-        return error;  // Spring converts this to JSON
+        // Line 12: Return error object
+        // Spring automatically converts ErrorResponse → JSON
+        // Combined with @ResponseStatus, this creates 404 response
+        return error;
     }
 }
 ```
