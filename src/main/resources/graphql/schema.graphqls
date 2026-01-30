@@ -1,0 +1,59 @@
+# GraphQL Schema Definition
+# 
+# This file defines what data you can query and what mutations you can perform.
+# Think of it like a menu at a restaurant - shows what's available.
+#
+# GraphQL is different from REST:
+# - REST: Multiple endpoints (/students, /students/1, /students/1/grades)
+# - GraphQL: Single endpoint (/graphql) - client specifies what data they want
+#
+# GraphQL has two main operations:
+# 1. Query: Read data (like GET in REST)
+# 2. Mutation: Write data (like POST/PUT/DELETE in REST)
+
+# ============================================
+# QUERIES (Read Operations)
+# ============================================
+type Query {
+    # Get student by ID
+    # Example usage:
+    # query {
+    #   studentById(id: 1) {
+    #     id
+    #     name
+    #     age
+    #     grade
+    #   }
+    # }
+    studentById(id: ID!): Student
+}
+
+# ============================================
+# MUTATIONS (Write Operations)
+# ============================================
+type Mutation {
+    # Create a new student
+    # Example usage:
+    # mutation {
+    #   createStudent(name: "John", age: 15, grade: "A") {
+    #     id
+    #     name
+    #     age
+    #     grade
+    #   }
+    # }
+    createStudent(name: String!, age: Int!, grade: String!): Student
+}
+
+# ============================================
+# TYPES (Data Structures)
+# ============================================
+
+# Student type - represents a student object
+# ! means "required" (cannot be null)
+type Student {
+    id: ID!
+    name: String!
+    age: Int!
+    grade: String!
+}

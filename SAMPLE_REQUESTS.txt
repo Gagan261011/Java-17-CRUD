@@ -1,0 +1,178 @@
+# ============================================
+# SAMPLE REQUESTS FOR TESTING
+# ============================================
+# Copy and paste these into your terminal/tool to test the APIs
+
+# ============================================
+# 1. REST API REQUESTS
+# ============================================
+
+# --- Create Student (POST) ---
+# PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8080/api/students" -Method Post -ContentType "application/json" -Body '{"name":"John Doe","age":15,"grade":"A"}'
+
+# Curl:
+curl -X POST http://localhost:8080/api/students -H "Content-Type: application/json" -d '{"name":"John Doe","age":15,"grade":"A"}'
+
+
+# --- Get Student by ID (GET) ---
+# PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8080/api/students/1"
+
+# Curl:
+curl http://localhost:8080/api/students/1
+
+
+# --- Health Check ---
+# PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8080/api/students/health"
+
+# Curl:
+curl http://localhost:8080/api/students/health
+
+
+# ============================================
+# 2. SOAP API REQUESTS
+# ============================================
+
+# --- Create Student (SOAP) ---
+# Curl:
+curl -X POST http://localhost:8080/ws -H "Content-Type: text/xml" -d '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://learning.com/crud/soap"><soapenv:Header/><soapenv:Body><soap:createStudentRequest><soap:name>Jane Smith</soap:name><soap:age>16</soap:age><soap:grade>B</soap:grade></soap:createStudentRequest></soapenv:Body></soapenv:Envelope>'
+
+# PowerShell:
+$body = @'
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://learning.com/crud/soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:createStudentRequest>
+         <soap:name>Jane Smith</soap:name>
+         <soap:age>16</soap:age>
+         <soap:grade>B</soap:grade>
+      </soap:createStudentRequest>
+   </soapenv:Body>
+</soapenv:Envelope>
+'@
+Invoke-RestMethod -Uri "http://localhost:8080/ws" -Method Post -ContentType "text/xml" -Body $body
+
+
+# --- Get Student by ID (SOAP) ---
+# Curl:
+curl -X POST http://localhost:8080/ws -H "Content-Type: text/xml" -d '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://learning.com/crud/soap"><soapenv:Header/><soapenv:Body><soap:getStudentByIdRequest><soap:id>1</soap:id></soap:getStudentByIdRequest></soapenv:Body></soapenv:Envelope>'
+
+# PowerShell:
+$body = @'
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://learning.com/crud/soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <soap:getStudentByIdRequest>
+         <soap:id>1</soap:id>
+      </soap:getStudentByIdRequest>
+   </soapenv:Body>
+</soapenv:Envelope>
+'@
+Invoke-RestMethod -Uri "http://localhost:8080/ws" -Method Post -ContentType "text/xml" -Body $body
+
+
+# --- View WSDL ---
+# Browser or Curl:
+curl http://localhost:8080/ws/students.wsdl
+
+
+# ============================================
+# 3. GRAPHQL API REQUESTS
+# ============================================
+
+# --- Create Student (Mutation) ---
+# Curl:
+curl -X POST http://localhost:8080/graphql -H "Content-Type: application/json" -d '{"query":"mutation { createStudent(name: \"Alice Johnson\", age: 17, grade: \"A\") { id name age grade } }"}'
+
+# PowerShell:
+$query = '{"query":"mutation { createStudent(name: \"Alice Johnson\", age: 17, grade: \"A\") { id name age grade } }"}'
+Invoke-RestMethod -Uri "http://localhost:8080/graphql" -Method Post -ContentType "application/json" -Body $query
+
+
+# --- Get Student by ID (Query) ---
+# Curl:
+curl -X POST http://localhost:8080/graphql -H "Content-Type: application/json" -d '{"query":"query { studentById(id: 1) { id name age grade } }"}'
+
+# PowerShell:
+$query = '{"query":"query { studentById(id: 1) { id name age grade } }"}'
+Invoke-RestMethod -Uri "http://localhost:8080/graphql" -Method Post -ContentType "application/json" -Body $query
+
+
+# --- Get Only Name (GraphQL Flexibility) ---
+# Curl:
+curl -X POST http://localhost:8080/graphql -H "Content-Type: application/json" -d '{"query":"query { studentById(id: 1) { name } }"}'
+
+# PowerShell:
+$query = '{"query":"query { studentById(id: 1) { name } }"}'
+Invoke-RestMethod -Uri "http://localhost:8080/graphql" -Method Post -ContentType "application/json" -Body $query
+
+
+# ============================================
+# 4. INTERACTIVE INTERFACES
+# ============================================
+
+# GraphiQL Playground (Browser):
+# http://localhost:8080/graphiql
+
+# H2 Database Console (Browser):
+# http://localhost:8080/h2-console
+# JDBC URL: jdbc:h2:mem:testdb
+# Username: sa
+# Password: (leave empty)
+
+
+# ============================================
+# 5. TESTING SEQUENCE
+# ============================================
+
+# Recommended order for testing:
+# 1. Start application: mvn spring-boot:run
+# 2. Create a student using REST POST
+# 3. Get that student using REST GET
+# 4. Create another student using SOAP
+# 5. Get that student using GraphQL
+# 6. View all data in H2 console
+# 7. Try GraphiQL playground for GraphQL
+
+
+# ============================================
+# 6. EXPECTED RESPONSES
+# ============================================
+
+# REST POST Response:
+# {
+#   "id": 1,
+#   "name": "John Doe",
+#   "age": 15,
+#   "grade": "A"
+# }
+
+# REST GET Response:
+# {
+#   "id": 1,
+#   "name": "John Doe",
+#   "age": 15,
+#   "grade": "A"
+# }
+
+# GraphQL Response:
+# {
+#   "data": {
+#     "createStudent": {
+#       "id": "1",
+#       "name": "Alice Johnson",
+#       "age": 17,
+#       "grade": "A"
+#     }
+#   }
+# }
+
+# Error Response (Student Not Found):
+# {
+#   "timestamp": "2026-01-30T10:30:00",
+#   "status": 404,
+#   "error": "Not Found",
+#   "message": "Student not found with id: 999"
+# }

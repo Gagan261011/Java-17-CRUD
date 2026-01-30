@@ -1,0 +1,620 @@
+{
+	"info": {
+		"_postman_id": "java-crud-collection-2026",
+		"name": "Student CRUD API - Java 17",
+		"description": "Complete collection for testing REST, SOAP, and GraphQL APIs for Student CRUD application.\n\n**Prerequisites:**\n- Application must be running on http://localhost:8080\n- Run: mvn spring-boot:run\n\n**Collection includes:**\n- 2 REST API endpoints\n- 2 SOAP API endpoints\n- 2 GraphQL API endpoints\n- Health check endpoint\n- H2 Console link\n\n**Created:** January 2026",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "REST APIs",
+			"item": [
+				{
+					"name": "Create Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 201 Created",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test: Response should have JSON body",
+									"pm.test(\"Response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"// Test: Response should contain required fields",
+									"pm.test(\"Response has required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('age');",
+									"    pm.expect(jsonData).to.have.property('grade');",
+									"});",
+									"",
+									"// Save student ID for next requests",
+									"var jsonData = pm.response.json();",
+									"pm.environment.set(\"student_id\", jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"age\": 15,\n    \"grade\": \"A\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/students",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"students"
+							]
+						},
+						"description": "Creates a new student in the database.\n\n**Request Body:**\n- name (string, required): Student's name\n- age (integer, required): Student's age\n- grade (string, required): Student's grade (A, B, C, etc.)\n\n**Response:**\n- HTTP 201 Created\n- Returns the created student with generated ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 200 OK",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response should be JSON",
+									"pm.test(\"Response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"// Test: Response contains student data",
+									"pm.test(\"Response contains student data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    pm.expect(jsonData).to.have.property('age');",
+									"    pm.expect(jsonData).to.have.property('grade');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/students/{{student_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"students",
+								"{{student_id}}"
+							]
+						},
+						"description": "Retrieves a student by their ID.\n\n**Path Parameter:**\n- id (long): Student's unique identifier\n\n**Response:**\n- HTTP 200 OK: Returns student data\n- HTTP 404 Not Found: Student doesn't exist\n\n**Note:** Uses {{student_id}} variable. Create a student first or replace with actual ID (e.g., 1)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 404",
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test: Error message is present",
+									"pm.test(\"Error message present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('not found');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/students/999",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"students",
+								"999"
+							]
+						},
+						"description": "Tests error handling when student doesn't exist.\n\n**Expected Response:**\n- HTTP 404 Not Found\n- JSON error message with timestamp, status, error, and message fields"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"API is running\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/students/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"students",
+								"health"
+							]
+						},
+						"description": "Simple health check to verify REST API is running.\n\n**Response:**\n- HTTP 200 OK\n- Text: \"REST API is running! ✓\""
+					},
+					"response": []
+				}
+			],
+			"description": "REST API endpoints for Student CRUD operations.\n\n**Base URL:** http://localhost:8080/api/students\n\n**Endpoints:**\n- POST / - Create student\n- GET /{id} - Get student by ID"
+		},
+		{
+			"name": "SOAP APIs",
+			"item": [
+				{
+					"name": "Create Student (SOAP)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response is XML",
+									"pm.test(\"Response is XML\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"xml\");",
+									"});",
+									"",
+									"// Test: Response contains student data",
+									"pm.test(\"Response contains student\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"createStudentResponse\");",
+									"    pm.expect(pm.response.text()).to.include(\"<ns2:id>\");",
+									"    pm.expect(pm.response.text()).to.include(\"Jane Smith\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml"
+							},
+							{
+								"key": "SOAPAction",
+								"value": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" \n                  xmlns:soap=\"http://learning.com/crud/soap\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <soap:createStudentRequest>\n         <soap:name>Jane Smith</soap:name>\n         <soap:age>16</soap:age>\n         <soap:grade>B</soap:grade>\n      </soap:createStudentRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+						},
+						"url": {
+							"raw": "http://localhost:8080/ws",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ws"
+							]
+						},
+						"description": "SOAP endpoint to create a new student.\n\n**SOAP Action:** createStudentRequest\n\n**Request Elements:**\n- name: Student's name\n- age: Student's age (integer)\n- grade: Student's grade\n\n**Response:**\n- SOAP envelope with createStudentResponse\n- Contains student object with id, name, age, grade"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID (SOAP)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response is XML",
+									"pm.test(\"Response is XML\", function () {",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"xml\");",
+									"});",
+									"",
+									"// Test: Response contains student data",
+									"pm.test(\"Response contains student\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"getStudentByIdResponse\");",
+									"    pm.expect(pm.response.text()).to.include(\"<ns2:student>\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml"
+							},
+							{
+								"key": "SOAPAction",
+								"value": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" \n                  xmlns:soap=\"http://learning.com/crud/soap\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <soap:getStudentByIdRequest>\n         <soap:id>1</soap:id>\n      </soap:getStudentByIdRequest>\n   </soapenv:Body>\n</soapenv:Envelope>"
+						},
+						"url": {
+							"raw": "http://localhost:8080/ws",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ws"
+							]
+						},
+						"description": "SOAP endpoint to get student by ID.\n\n**SOAP Action:** getStudentByIdRequest\n\n**Request Elements:**\n- id: Student's ID (long)\n\n**Response:**\n- SOAP envelope with getStudentByIdResponse\n- Contains student object with all fields"
+					},
+					"response": []
+				},
+				{
+					"name": "Get WSDL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/ws/students.wsdl",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"ws",
+								"students.wsdl"
+							]
+						},
+						"description": "Retrieves the WSDL (Web Service Description Language) document.\n\nWSDL describes:\n- Available SOAP operations\n- Message formats\n- Data types\n- Service endpoint\n\n**Use this to:**\n- Generate SOAP client code\n- Import into SOAP testing tools\n- Understand SOAP service contract"
+					},
+					"response": []
+				}
+			],
+			"description": "SOAP API endpoints for Student CRUD operations.\n\n**SOAP Endpoint:** http://localhost:8080/ws\n**WSDL:** http://localhost:8080/ws/students.wsdl\n\n**Operations:**\n- createStudentRequest\n- getStudentByIdRequest"
+		},
+		{
+			"name": "GraphQL APIs",
+			"item": [
+				{
+					"name": "Create Student (Mutation)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response contains data",
+									"pm.test(\"Response contains data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('createStudent');",
+									"});",
+									"",
+									"// Test: Student data is correct",
+									"pm.test(\"Student created successfully\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var student = jsonData.data.createStudent;",
+									"    pm.expect(student).to.have.property('id');",
+									"    pm.expect(student.name).to.eql('Alice Johnson');",
+									"    pm.expect(student.age).to.eql(17);",
+									"    pm.expect(student.grade).to.eql('A');",
+									"});",
+									"",
+									"// Save student ID",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.createStudent) {",
+									"    pm.environment.set(\"graphql_student_id\", jsonData.data.createStudent.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"mutation { createStudent(name: \\\"Alice Johnson\\\", age: 17, grade: \\\"A\\\") { id name age grade } }\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "GraphQL mutation to create a new student.\n\n**Mutation:**\n```graphql\nmutation {\n  createStudent(name: \"Alice Johnson\", age: 17, grade: \"A\") {\n    id\n    name\n    age\n    grade\n  }\n}\n```\n\n**Parameters:**\n- name (String!): Required\n- age (Int!): Required\n- grade (String!): Required\n\n**Return Fields:**\nYou can select which fields to return (id, name, age, grade)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student by ID (Query)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response status should be 200",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test: Response contains data",
+									"pm.test(\"Response contains data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});",
+									"",
+									"// Test: Student data exists",
+									"pm.test(\"Student data retrieved\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.studentById) {",
+									"        pm.expect(jsonData.data.studentById).to.have.property('id');",
+									"        pm.expect(jsonData.data.studentById).to.have.property('name');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"query { studentById(id: 1) { id name age grade } }\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "GraphQL query to get student by ID.\n\n**Query:**\n```graphql\nquery {\n  studentById(id: 1) {\n    id\n    name\n    age\n    grade\n  }\n}\n```\n\n**Parameters:**\n- id (ID!): Student's unique identifier (required)\n\n**Return Fields:**\nSelect only the fields you need!"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student - Only Name (Selective)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test: Response contains only name field",
+									"pm.test(\"Response contains only requested fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.studentById) {",
+									"        var student = jsonData.data.studentById;",
+									"        pm.expect(student).to.have.property('name');",
+									"        // Should NOT have other fields since we didn't request them",
+									"        pm.expect(student).to.not.have.property('age');",
+									"        pm.expect(student).to.not.have.property('grade');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"query\": \"query { studentById(id: 1) { name } }\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/graphql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"graphql"
+							]
+						},
+						"description": "Demonstrates GraphQL's power: Request only the fields you need!\n\n**Query:**\n```graphql\nquery {\n  studentById(id: 1) {\n    name\n  }\n}\n```\n\nThis returns ONLY the name field, saving bandwidth.\n\n**GraphQL Advantage:**\n- No over-fetching (unlike REST which returns all fields)\n- No under-fetching (request exactly what you need)\n- Perfect for mobile apps with limited bandwidth"
+					},
+					"response": []
+				}
+			],
+			"description": "GraphQL API endpoints for Student CRUD operations.\n\n**GraphQL Endpoint:** http://localhost:8080/graphql\n**GraphiQL Playground:** http://localhost:8080/graphiql (Open in browser)\n\n**Operations:**\n- Mutation: createStudent\n- Query: studentById\n\n**GraphQL Benefits:**\n- Request only the fields you need\n- Single endpoint for all operations\n- Strongly typed schema"
+		},
+		{
+			"name": "Utilities",
+			"item": [
+				{
+					"name": "H2 Console (Browser)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/h2-console",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"h2-console"
+							]
+						},
+						"description": "Opens H2 Database Console in browser.\n\n**Connection Settings:**\n- JDBC URL: `jdbc:h2:mem:testdb`\n- Username: `sa`\n- Password: (leave empty)\n\n**Use this to:**\n- View actual database tables\n- Run SQL queries\n- See student records\n- Verify data persistence\n\n**Note:** This opens a web page, not an API response."
+					},
+					"response": []
+				},
+				{
+					"name": "GraphiQL Playground (Browser)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/graphiql",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"graphiql"
+							]
+						},
+						"description": "Opens GraphiQL - an interactive GraphQL playground.\n\n**Features:**\n- Auto-complete for queries/mutations\n- Schema documentation\n- Query history\n- Syntax highlighting\n- Real-time validation\n\n**Perfect for:**\n- Learning GraphQL syntax\n- Testing queries interactively\n- Exploring schema\n\n**Note:** This opens a web page with GraphQL IDE."
+					},
+					"response": []
+				}
+			],
+			"description": "Utility endpoints and browser-based tools.\n\n**Includes:**\n- H2 Database Console\n- GraphiQL Playground"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// Runs before every request in this collection",
+					"",
+					"console.log('🚀 Sending request to:', pm.request.url.toString());"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"// Runs after every request in this collection",
+					"",
+					"console.log('✅ Request completed with status:', pm.response.code);"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "student_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "graphql_student_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

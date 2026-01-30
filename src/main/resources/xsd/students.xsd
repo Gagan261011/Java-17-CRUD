@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://learning.com/crud/soap"
+           targetNamespace="http://learning.com/crud/soap"
+           elementFormDefault="qualified">
+
+    <!-- 
+        XSD (XML Schema Definition): Defines the structure of SOAP messages
+        
+        Think of this like a contract:
+        - What data the SOAP service accepts
+        - What data the SOAP service returns
+        
+        This file is used to:
+        1. Generate Java classes (JAXB)
+        2. Generate WSDL (Web Service Description Language)
+    -->
+
+    <!-- ============================================ -->
+    <!-- CREATE STUDENT REQUEST -->
+    <!-- ============================================ -->
+    <xs:element name="createStudentRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+                <xs:element name="age" type="xs:int"/>
+                <xs:element name="grade" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ============================================ -->
+    <!-- CREATE STUDENT RESPONSE -->
+    <!-- ============================================ -->
+    <xs:element name="createStudentResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="student" type="tns:student"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ============================================ -->
+    <!-- GET STUDENT BY ID REQUEST -->
+    <!-- ============================================ -->
+    <xs:element name="getStudentByIdRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="id" type="xs:long"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ============================================ -->
+    <!-- GET STUDENT BY ID RESPONSE -->
+    <!-- ============================================ -->
+    <xs:element name="getStudentByIdResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="student" type="tns:student"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ============================================ -->
+    <!-- STUDENT COMPLEX TYPE (Reusable) -->
+    <!-- ============================================ -->
+    <xs:complexType name="student">
+        <xs:sequence>
+            <xs:element name="id" type="xs:long"/>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="age" type="xs:int"/>
+            <xs:element name="grade" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
